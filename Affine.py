@@ -129,9 +129,17 @@ if __name__ == '__main__':
         #from_pt = ((-3, 0), (0, 3), (3, 0))
         #to_pt =  ((2, 3), (3, 2), (4, 3)) 
 
-        #rotate 80 degs Scale X1.1 Y1.3 translate X0.1 Y-80   -  
-        from_pt = ((-30,30),(30,-30),(-30,-30))
-        to_pt =  ((-38.129,-111.635),(38.32905,-48.3648),(26.86827,-125.18))   
+        #Scale X1.1 Y1.3 rotate 80 degs translate X0.1 Y-80   -  OK
+        #from_pt = ((-30,30),(30,-30),(-30,-30))
+        #to_pt =  ((-44.0379,-105.726),(44.23789,-54.2736),(32.77711,-119.271))   
+
+        #Scale X1.1 Y1.3 rotate 175 degs translate X0.1 Y-80   -  GETS SCALE NEGATIVE
+        #from_pt = ((-30,30),(30,-30),(-30,-30))
+        #to_pt =  ((29.57535,-121.728),(-29.3754,-38.2723),(36.3735,-44.0245))   
+
+        #Scale X1.1 Y1.3 rotate 175 degs translate X0.1 Y-80   -  OK
+        from_pt = ((-30,10),(30,-10),(30,10))
+        to_pt =  ((31.8414,-95.8267),(-31.6414,-64.1733),(-33.9074,-90.0744))  
 
     trn = Affine_Fit(from_pt, to_pt)
     dim = trn.Get_Dim()
@@ -159,12 +167,18 @@ if __name__ == '__main__':
     
 
     #ROTATE SCALE TRANSLATE SOLUTION
-    print(" --- ROTATE --- SCALE --- TRANSLATE --- ")
     print(" -------------------------------------- ")
-
-    print("Offset x:" + str(trn.Get_Element(2, 3)))
-    print("Offset y:" + str(trn.Get_Element(2, 4)))
+    print(" --- ROTATE --- SCALE --- TRANSLATE --- ")
     
+    offset_x = trn.Get_Element(2, 3)
+    offset_y = trn.Get_Element(2, 4)
+    print("Offset x:" + str(offset_x))
+    print("Offset y:" + str(offset_y))
+    
+    #EXCLUDE NEGATIVE SCALES
+    signa=1.0
+    signd=1.0
+    """
     if a<0:
         signa = -1.0
     else:
@@ -172,7 +186,8 @@ if __name__ == '__main__':
     if d<0:
         signd = -1.0
     else:
-        signd = 1.0   
+        signd = 1.0
+    """  
        
     sx = signa*math.sqrt(a*a + b*b)
     sy = signd*math.sqrt(c*c + d*d)
@@ -188,9 +203,43 @@ if __name__ == '__main__':
     print("Average Angle = " + str(angle))
 
     #SCALE ROTATE TRANSLATE SOLUTION
-    print(" --- ROTATE --- SCALE --- TRANSLATE --- ")
     print(" -------------------------------------- ")
+    print(" --- SCALE --- ROTATE --- TRANSLATE --- ")
 
+    offset_x = trn.Get_Element(2, 3)
+    offset_y = trn.Get_Element(2, 4)
+    print("Offset x:" + str(offset_x))
+    print("Offset y:" + str(offset_y))
+    
+    #EXCLUDE NEGATIVE SCALES
+    signa=1.0
+    signd=1.0
+    """
+    if a<0:
+        signa = -1.0
+    else:
+        signa = 1.0
+    if d<0:
+        signd = -1.0
+    else:
+        signd = 1.0  
+    """ 
+       
+    sx = signa*math.sqrt(a*a + c*c)
+    sy = signd*math.sqrt(b*b + d*d)
+
+    angle1 = math.atan2(-1.0*b,d)
+    angle2 = math.atan2(c,a)
+    angle = (angle1+angle2)/2.0
+
+    print("Scale x = " + str(sx) )
+    print("Scale y = " + str(sy) )
+    print("Angle (-b,d) = " + str(angle1) )
+    print("Angle (c,a) = " + str(angle2) )
+    print("Average Angle = " + str(angle))
+
+
+    print(" -------------------------------------- ")
 
     err = 0.0
     for i in range(len(from_pt)):
