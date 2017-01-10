@@ -6,6 +6,8 @@ Created on Mon Jan  9 22:30:55 2017
 """
 ## Modified from version written by Jarno Elonen
 import math
+import sys
+from ast import literal_eval # used to convert string to list of tuples
 
 def Affine_Fit( from_pts, to_pts ):
     """Fit an affine transformation to given point sets.
@@ -47,33 +49,33 @@ def Affine_Fit( from_pts, to_pts ):
                 Q[i][j] += qt[i] * qt[j]
 
     # Ultra simple linear system solver. Replace this if you need speed.
-    def gauss_jordan(m, eps = 1.0/(10**10)):
-      """Puts given matrix (2D array) into the Reduced Row Echelon Form.
-         Returns True if successful, False if 'm' is singular.
-         NOTE: make sure all the matrix items support fractions! Int matrix will NOT work!
-         Written by Jarno Elonen in April 2005, released into Public Domain"""
-      (h, w) = (len(m), len(m[0]))
-      for y in range(0,h):
-        maxrow = y
-        for y2 in range(y+1, h):    # Find max pivot
-          if abs(m[y2][y]) > abs(m[maxrow][y]):
-            maxrow = y2
-        (m[y], m[maxrow]) = (m[maxrow], m[y])
-        if abs(m[y][y]) <= eps:     # Singular?
-          return False
-        for y2 in range(y+1, h):    # Eliminate column y
-          c = m[y2][y] / m[y][y]
-          for x in range(y, w):
-            m[y2][x] -= m[y][x] * c
-      for y in range(h-1, 0-1, -1): # Backsubstitute
-        c  = m[y][y]
-        for y2 in range(0,y):
-          for x in range(w-1, y-1, -1):
-            m[y2][x] -=  m[y][x] * m[y2][y] / c
-        m[y][y] /= c
-        for x in range(h, w):       # Normalize row y
-          m[y][x] /= c
-      return True
+    def gauss_jordan(m, eps= 1.0/(10**10)):
+        #Puts given matrix (2D array) into the Reduced Row Echelon Form.
+        #Returns True if successful, False if 'm' is singular.
+        #NOTE: make sure all the matrix items support fractions! Int matrix will NOT work!
+        #Written by Jarno Elonen in April 2005, released into Public Domain
+        (h, w) = (len(m), len(m[0]))
+        for y in range(0,h):
+            maxrow = y
+            for y2 in range(y+1, h):    # Find max pivot
+                if abs(m[y2][y]) > abs(m[maxrow][y]):
+                    maxrow = y2
+            (m[y], m[maxrow]) = (m[maxrow], m[y])
+            if abs(m[y][y]) <= eps:     # Singular?
+                return False
+            for y2 in range(y+1, h):    # Eliminate column y
+                c = m[y2][y] / m[y][y]
+                for x in range(y, w):
+                    m[y2][x] -= m[y][x] * c
+        for y in range(h-1, 0-1, -1): # Backsubstitute
+            c  = m[y][y]
+            for y2 in range(0,y):
+                for x in range(w-1, y-1, -1):
+                    m[y2][x] -=  m[y][x] * m[y2][y] / c
+            m[y][y] /= c
+            for x in range(h, w):       # Normalize row y
+                m[y][x] /= c
+        return True
 
     # Augement Q with c and solve Q * a' = c by Gauss-Jordan
     M = [ Q[i] + c[i] for i in range(dim+1)]
@@ -112,38 +114,56 @@ def Affine_Fit( from_pts, to_pts ):
     return Transformation()
 
 if __name__ == '__main__':
-    #from_pt = ((1,1),(1,2),(2,2),(2,1))
-    #to_pt =  ((4,4),(6,6),(8,4),(6,2))
-    
-    from_pt = ((-3,0),(0,3),(3,0))
-    to_pt =  ((2,3),(3,2),(4,3))
-    
+   
+    print("Running script " + sys.argv[0] + "....")
+
+    if len(sys.argv)>2:
+        print("Using EXTERNAL data")
+        from_pt =literal_eval(sys.argv[1])
+        to_pt = literal_eval(sys.argv[2])
+    else:
+        print("Using INTERNAL data")
+        #from_pt = ((1,1),(1,2),(2,2),(2,1))   
+        #to_pt =  ((4,4),(6,6),(8,4),(6,2))
+
+        #from_pt = ((-3, 0), (0, 3), (3, 0))
+        #to_pt =  ((2, 3), (3, 2), (4, 3)) 
+
+        #rotate 80 degs Scale X1.1 Y1.3 translate X0.1 Y-80   -  
+        from_pt = ((-30,30),(30,-30),(-30,-30))
+        to_pt =  ((-38.129,-111.635),(38.32905,-48.3648),(26.86827,-125.18))   
+
     trn = Affine_Fit(from_pt, to_pt)
     dim = trn.Get_Dim()
+
     print("Dimension: %d" %dim)
     print("Transformation is:")
     print(trn.To_Str())
-    print("Offset x:" + str(trn.Get_Element(2,3)))
-    print("Offset y:" + str(trn.Get_Element(2,4)))
     
-    res = ""
-    for j in range(dim):
-        str = "x%d' = " % j
-        for i in range(dim):
-            str +="x%d * %f + " % (i, trn.Get_Element(i,j+dim+1))
-        str += "%f" % trn.Get_Element(dim,j+dim+1)
-        res += str + "\n"
-    print(res)
+    print(" ---------- Full Matrix   ---------- ")
+    for j in range(dim+dim+1):
+        for i in range(dim+1):
+            print( str(i) +"," + str(j)  + " " + str(trn.Get_Element(i,j))  )       
+    print(" ------------------------------------ ")
+    print("\n")
     
-    a = trn.Get_Element(0,2)
-    b = trn.Get_Element(0,2)
-    c = trn.Get_Element(1,3)
-    d = trn.Get_Element(1,3)
+    a = trn.Get_Element(0,3)
+    b = trn.Get_Element(1,3)
+    c = trn.Get_Element(0,4)
+    d = trn.Get_Element(1,4)
     
-    print("a = %d" %a)
-    print("b = %d" %b)
-    print("c = %d" %c)
-    print("d = %d" %d)
+    print("a = " + str(a))
+    print("b = " + str(b))
+    print("c = " + str(c))
+    print("d = " + str(d))
+    
+
+    #ROTATE SCALE TRANSLATE SOLUTION
+    print(" --- ROTATE --- SCALE --- TRANSLATE --- ")
+    print(" -------------------------------------- ")
+
+    print("Offset x:" + str(trn.Get_Element(2, 3)))
+    print("Offset y:" + str(trn.Get_Element(2, 4)))
     
     if a<0:
         signa = -1.0
@@ -158,12 +178,20 @@ if __name__ == '__main__':
     sy = signd*math.sqrt(c*c + d*d)
     angle1 = math.atan2(-1.0*b,a)
     angle2 = math.atan2(c,d)
+
+    angle = (angle1+angle2)/2.0
     
-    print("Scale x = %d" %sx)
-    print("Scale y = %d" %sy)
-    print("Angle (-b,a) = %d" %angle1)
-    print("Angle (c,d) = %d" %angle2)
-    
+    print("Scale x = " + str(sx) )
+    print("Scale y = " + str(sy) )
+    print("Angle (-b,a) = " + str(angle1) )
+    print("Angle (c,d) = " + str(angle2) )
+    print("Average Angle = " + str(angle))
+
+    #SCALE ROTATE TRANSLATE SOLUTION
+    print(" --- ROTATE --- SCALE --- TRANSLATE --- ")
+    print(" -------------------------------------- ")
+
+
     err = 0.0
     for i in range(len(from_pt)):
         fp = from_pt[i]
