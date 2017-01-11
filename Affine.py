@@ -39,7 +39,7 @@ def Affine_Fit( from_pts, to_pts ):
             for i in range(len(q)):
                 qt = list(q[i]) + [1]
                 c[k][j] += qt[k] * p[i][j]
-
+    #print(c)
     # Make an empty (dim+1) x (dim+1) matrix and fill it
     Q = [[0.0 for a in range(dim)] + [0] for i in range(dim+1)]
     for qi in q:
@@ -48,13 +48,16 @@ def Affine_Fit( from_pts, to_pts ):
             for j in range(dim+1):
                 Q[i][j] += qt[i] * qt[j]
 
+    #print(Q)
     # Ultra simple linear system solver. Replace this if you need speed.
-    def gauss_jordan(m, eps= 1.0/(10**10)):
+    def gauss_jordan(m, eps= 1.0/(10**10)): 
         #Puts given matrix (2D array) into the Reduced Row Echelon Form.
         #Returns True if successful, False if 'm' is singular.
         #NOTE: make sure all the matrix items support fractions! Int matrix will NOT work!
         #Written by Jarno Elonen in April 2005, released into Public Domain
         (h, w) = (len(m), len(m[0]))
+        print(h)
+        print(w)
         for y in range(0,h):
             maxrow = y
             for y2 in range(y+1, h):    # Find max pivot
@@ -79,6 +82,7 @@ def Affine_Fit( from_pts, to_pts ):
 
     # Augement Q with c and solve Q * a' = c by Gauss-Jordan
     M = [ Q[i] + c[i] for i in range(dim+1)]
+    print(M)
     if not gauss_jordan(M):
         print("Error: singular matrix. Points are probably coplanar.")
         return False
@@ -166,9 +170,9 @@ if __name__ == '__main__':
     print("d = " + str(d))
     
 
-    #ROTATE SCALE TRANSLATE SOLUTION
+    #SCALE ROTATE TRANSLATE SOLUTION
     print(" -------------------------------------- ")
-    print(" --- ROTATE --- SCALE --- TRANSLATE --- ")
+    print(" --- SCALE --- ROTATE --- TRANSLATE --- ")
     
     offset_x = trn.Get_Element(2, 3)
     offset_y = trn.Get_Element(2, 4)
@@ -189,22 +193,22 @@ if __name__ == '__main__':
         signd = 1.0
     """  
        
-    sx = signa*math.sqrt(a*a + b*b)
-    sy = signd*math.sqrt(c*c + d*d)
-    angle1 = math.atan2(-1.0*b,a)
-    angle2 = math.atan2(c,d)
+    sx = signa*math.sqrt(a*a + c*c)
+    sy = signd*math.sqrt(b*b + d*d)
+    angle1 = math.atan2(c,a)
+    angle2 = math.atan2(-1.0*b,d)
 
     angle = (angle1+angle2)/2.0
     
     print("Scale x = " + str(sx) )
     print("Scale y = " + str(sy) )
-    print("Angle (-b,a) = " + str(angle1) )
-    print("Angle (c,d) = " + str(angle2) )
+    print("Angle (c,a) = " + str(angle1) )
+    print("Angle (-b,d) = " + str(angle2) )
     print("Average Angle = " + str(angle))
 
-    #SCALE ROTATE TRANSLATE SOLUTION
+    #ROTATE SCALE TRANSLATE SOLUTION
     print(" -------------------------------------- ")
-    print(" --- SCALE --- ROTATE --- TRANSLATE --- ")
+    print(" --- ROTATE --- SCALE --- TRANSLATE --- ")
 
     offset_x = trn.Get_Element(2, 3)
     offset_y = trn.Get_Element(2, 4)
@@ -225,17 +229,17 @@ if __name__ == '__main__':
         signd = 1.0  
     """ 
        
-    sx = signa*math.sqrt(a*a + c*c)
-    sy = signd*math.sqrt(b*b + d*d)
+    sx = signa*math.sqrt(a*a + b*b)
+    sy = signd*math.sqrt(c*c + d*d)
 
-    angle1 = math.atan2(-1.0*b,d)
-    angle2 = math.atan2(c,a)
+    angle1 = math.atan2(-1.0*b,a)
+    angle2 = math.atan2(c,d)
     angle = (angle1+angle2)/2.0
 
     print("Scale x = " + str(sx) )
     print("Scale y = " + str(sy) )
-    print("Angle (-b,d) = " + str(angle1) )
-    print("Angle (c,a) = " + str(angle2) )
+    print("Angle (-b,a) = " + str(angle1))
+    print("Angle (c,d) = " + str(angle2) )
     print("Average Angle = " + str(angle))
 
 
